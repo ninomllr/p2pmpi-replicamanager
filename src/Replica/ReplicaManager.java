@@ -2,6 +2,7 @@ package Replica;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import p2pmpi.mpi.Request;
@@ -9,14 +10,13 @@ import p2pmpi.mpi.Request;
 import Board.BoardEntry;
 import Utils.Logger;
 import Utils.Settings;
-import Utils.SortedList;
 import Messages.*;
 import P2P.Messenger;
 
 public class ReplicaManager extends Manager {
 
 	private ReplicationMessageHandler handler;
-	private SortedList<UpdateLogEntry> updateLog;
+	private List<UpdateLogEntry> updateLog;
 	private ArrayList<QueryMessage> pendingQueries;
 	private Random random;
 
@@ -26,7 +26,7 @@ public class ReplicaManager extends Manager {
 		super(nodeId);
 		handler = new ReplicationMessageHandler();
 		setTimestamp(new ReplicationTimestamp());
-		updateLog = new SortedList<UpdateLogEntry>();
+		updateLog = new ArrayList<UpdateLogEntry>();
 		executedLog = new ArrayList<ReplicationTimestamp>();
 		pendingQueries = new ArrayList<QueryMessage>();
 		random = new Random(Settings.getInstance().getSeed()+nodeId);
@@ -37,11 +37,13 @@ public class ReplicaManager extends Manager {
 	}
 
 	public void setTimestamp(ReplicationTimestamp timestamp) {
-		this.timestamp = timestamp;
+		this.timestamp = timestamp.clone();
 	}
 
 	public void increment() {
 		timestamp.increment(nodeId);
+		// TODO : true??
+		//boardTimestamp.increment(nodeId);
 	}
 
 	public int getLocalTime() {
@@ -51,7 +53,10 @@ public class ReplicaManager extends Manager {
 	public void addBoardEntry(BoardEntry entry,
 			ReplicationTimestamp timestampUpdate,
 			ReplicationTimestamp timestampMessage) {
+
+		//Logger.getInstance().logRank("timestamp: "+timestampMessage+", entry: "+entry.getTitle()+", contains: "+executedLog.contains(timestampMessage), 3);
 		if (!executedLog.contains(timestampMessage)) {
+			Logger.getInstance().logRank("timestamp: "+timestampMessage+", entry: "+entry.getTitle()+", contains: "+executedLog.contains(timestampMessage), 3);
 			board.add(entry);
 			boardTimestamp = timestampUpdate.maximize(boardTimestamp);
 			executedLog.add(timestampMessage);
@@ -64,6 +69,7 @@ public class ReplicaManager extends Manager {
 
 	public void maximizeTimestamp(ReplicationTimestamp other) {
 		timestamp = timestamp.maximize(other);
+
 	}
 
 	public void addLogEntries(ArrayList<UpdateLogEntry> log) {
@@ -71,9 +77,11 @@ public class ReplicaManager extends Manager {
 	}
 
 	public void executeUpdateLog() {
-		for (int i = 0; i < updateLog.size(); i++) {
+		for (int i = 0; i < updateLog.size() ; i++) {
 			UpdateLogEntry entry = updateLog.get(i);
-			if (boardTimestamp.compareTo(entry.getTimestamp()) < 1) {
+			
+			//if (boardTimestamp.happenedBefore(entry.getTimestamp())==1) {
+			if (entry.getTimestamp().happenedBefore(boardTimestamp)==0) {
 				addBoardEntry(entry.getEntry().getBoardEntry(),
 						entry.getTimestamp(), entry.getEntry().getTimestamp());
 			}
@@ -84,17 +92,22 @@ public class ReplicaManager extends Manager {
 
 		// @TODO löschen von alten nachrichten
 
-		ArrayList<UpdateLogEntry> delete = new ArrayList<UpdateLogEntry>();
-
+		/*ArrayList<UpdateLogEntry> delete = new ArrayList<UpdateLogEntry>();
+		//Logger.getInstance().logRank(""+updateLog.size(), 2);
 		for (int i = 0; i < updateLog.size(); i++) {
 			UpdateLogEntry entry = updateLog.get(i);
-			if (boardTimestamp.compareTo(entry.getEntry().getTimestamp()) < 1) {
-				if (executedLog.contains(entry.getEntry().getTimestamp()))
-					delete.add(entry);
+			if (entry.isGossiped()){
+				if (entry.getEntry().getTimestamp().happenedBefore(boardTimestamp) == 0) {
+					if (executedLog.contains(entry.getEntry().getTimestamp()))
+						//delete.add(entry);
+						updateLog.add(entry);
+				}
 			}
-		}
+		}*/
 
-		updateLog.removeAll(delete);
+		updateLog.clear();
+		//updateLog.removeAll(delete);
+		//Logger.getInstance().logRank(""+updateLog.size(), 2);
 	}
 
 	public void addQuery(QueryMessage message) {
@@ -150,11 +163,15 @@ public class ReplicaManager extends Manager {
 	
 	public void sendGossip(int receiver) {
 		GossipMessage message = new GossipMessage();
-		message.setLog(updateLog.toArrayList());
+		message.setLog(updateLog);
 		message.setTimestamp(timestamp);
 		message.setReceiver(receiver);
 		message.setSender(nodeId);
 		Messenger.send(message);
+		
+		for (int i = 0; i < updateLog.size(); i++) {
+			updateLog.get(i).setGossiped(true);
+		}
 	}
 
 }

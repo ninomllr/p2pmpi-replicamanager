@@ -18,4 +18,9 @@ public class Logger {
 		System.out.println("[" + rank + "] "+message );
 	}
 	
+	public void logRank(String message, int rank) {
+		if (Settings.getInstance().getRank() == rank)
+			log(message);
+	}
+	
 }

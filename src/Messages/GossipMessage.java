@@ -1,5 +1,6 @@
 package Messages;
 import java.util.ArrayList;
+import java.util.List;
 
 import Replica.*;
 
@@ -16,8 +17,8 @@ public class GossipMessage extends Message {
 		return log;
 	}
 
-	public void setLog(ArrayList<UpdateLogEntry> log) {
-		this.log = log;
+	public void setLog(List<UpdateLogEntry> updateLog) {
+		this.log = (ArrayList<UpdateLogEntry>) updateLog;
 	}
 
 	public GossipMessage() {

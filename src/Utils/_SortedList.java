@@ -11,7 +11,7 @@ import java.util.*;
  * 
  * @param <T>
  */
-public class SortedList<T> extends LinkedList<T> {
+public class _SortedList<T> extends LinkedList<T> {
 	/**
 	 * Needed for serialization.
 	 */
@@ -25,7 +25,7 @@ public class SortedList<T> extends LinkedList<T> {
 	 * Construct a new instance with the list elements sorted in their
 	 * {@link java.lang.Comparable} natural ordering.
 	 */
-	public SortedList() {
+	public _SortedList() {
 	}
 
 	/**
@@ -33,7 +33,7 @@ public class SortedList<T> extends LinkedList<T> {
 	 * 
 	 * @param comparator
 	 */
-	public SortedList(Comparator<? super T> comparator) {
+	public _SortedList(Comparator<? super T> comparator) {
 		this.comparator = comparator;
 	}
 

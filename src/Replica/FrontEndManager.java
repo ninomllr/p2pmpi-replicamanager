@@ -49,7 +49,7 @@ public class FrontEndManager extends Manager {
 		if (random.nextInt(100)>=95){
 			int replica =  getReplicaManager();
 			Logger.getInstance().log("Create a new entry and send to " + replica);
-			BoardEntry entry = new BoardEntry(nodeId, "a", "a");
+			BoardEntry entry = new BoardEntry(nodeId, String.format("%06d", random.nextInt(999999)), ""+nodeId);
 			createEntry(entry,replica);	
 		}
 		

@@ -4,13 +4,16 @@ import java.io.Serializable;
 import Board.ReplicaEntry;
 
 
-public class UpdateLogEntry implements Comparable<UpdateLogEntry>, Serializable {
+public class UpdateLogEntry implements Serializable {
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private ReplicationTimestamp timestamp;
+	private ReplicaEntry entry;
+	private boolean isGossiped;
+	
 	public ReplicationTimestamp getTimestamp() {
 		return timestamp;
 	}
@@ -19,16 +22,22 @@ public class UpdateLogEntry implements Comparable<UpdateLogEntry>, Serializable 
 		this.timestamp = timestamp;
 	}
 
-	private ReplicaEntry entry;
-
 	public UpdateLogEntry(ReplicationTimestamp identifier, ReplicaEntry data) {
 		this.timestamp = identifier;
 		this.setEntry(data);
+		this.setGossiped(false);
 	}
 
-	@Override
-	public int compareTo(UpdateLogEntry o) {
-		return timestamp.compareTo(o.timestamp);
+	public boolean isGossiped() {
+		return isGossiped;
+	}
+
+	public void setGossiped(boolean isGossiped) {
+		this.isGossiped = isGossiped;
+	}
+
+	public int happenedBefore(UpdateLogEntry o) {
+		return timestamp.happenedBefore(o.timestamp);
 	}
 
 	public ReplicaEntry getEntry() {
