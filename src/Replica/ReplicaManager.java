@@ -16,9 +16,10 @@ import P2P.Messenger;
 public class ReplicaManager extends Manager {
 
 	private ReplicationMessageHandler handler;
-	private List<UpdateLogEntry> updateLog;
+	private UpdateLog updateLog;
 	private ArrayList<QueryMessage> pendingQueries;
 	private Random random;
+	private ReplicationTimestamp timestamp;
 
 	private ArrayList<ReplicationTimestamp> executedLog;
 
@@ -26,7 +27,7 @@ public class ReplicaManager extends Manager {
 		super(nodeId);
 		handler = new ReplicationMessageHandler();
 		setTimestamp(new ReplicationTimestamp());
-		updateLog = new ArrayList<UpdateLogEntry>();
+		updateLog = new UpdateLog();
 		executedLog = new ArrayList<ReplicationTimestamp>();
 		pendingQueries = new ArrayList<QueryMessage>();
 		random = new Random(Settings.getInstance().getSeed()+nodeId);
@@ -42,24 +43,21 @@ public class ReplicaManager extends Manager {
 
 	public void increment() {
 		timestamp.increment(nodeId);
-		// TODO : true??
-		//boardTimestamp.increment(nodeId);
 	}
 
 	public int getLocalTime() {
 		return (timestamp.getTimestamps())[nodeId];
 	}
 
-	public void addBoardEntry(BoardEntry entry,
-			ReplicationTimestamp timestampUpdate,
-			ReplicationTimestamp timestampMessage) {
+	public void addUpdateLogEntryToBoard(UpdateLogEntry entry) {
 
-		//Logger.getInstance().logRank("timestamp: "+timestampMessage+", entry: "+entry.getTitle()+", contains: "+executedLog.contains(timestampMessage), 3);
-		if (!executedLog.contains(timestampMessage)) {
-			Logger.getInstance().logRank("timestamp: "+timestampMessage+", entry: "+entry.getTitle()+", contains: "+executedLog.contains(timestampMessage), 3);
-			board.add(entry);
-			boardTimestamp = timestampUpdate.maximize(boardTimestamp);
-			executedLog.add(timestampMessage);
+		if (!executedLog.contains(entry.getTimestamp())) {
+			
+			if (!super.addBoardEntry(entry.getEntry().getBoardEntry()))
+				return;
+			
+			boardTimestamp = entry.getTimestamp().maximize(boardTimestamp);
+			executedLog.add(entry.getTimestamp());
 		}
 	}
 
@@ -72,7 +70,7 @@ public class ReplicaManager extends Manager {
 
 	}
 
-	public void addLogEntries(ArrayList<UpdateLogEntry> log) {
+	public void addLogEntries(UpdateLog log) {
 		updateLog.addAll(log);
 	}
 
@@ -80,34 +78,27 @@ public class ReplicaManager extends Manager {
 		for (int i = 0; i < updateLog.size() ; i++) {
 			UpdateLogEntry entry = updateLog.get(i);
 			
-			//if (boardTimestamp.happenedBefore(entry.getTimestamp())==1) {
-			if (entry.getTimestamp().happenedBefore(boardTimestamp)==0) {
-				addBoardEntry(entry.getEntry().getBoardEntry(),
-						entry.getTimestamp(), entry.getEntry().getTimestamp());
+			if (boardTimestamp.happenedBefore(entry.getEntry().getTimestamp())) {
+				addUpdateLogEntryToBoard(entry);
 			}
 		}
 	}
 
 	public void cleanUpdateLog() {
 
-		// @TODO löschen von alten nachrichten
-
-		/*ArrayList<UpdateLogEntry> delete = new ArrayList<UpdateLogEntry>();
-		//Logger.getInstance().logRank(""+updateLog.size(), 2);
+		ArrayList<UpdateLogEntry> delete = new ArrayList<UpdateLogEntry>();
+		
 		for (int i = 0; i < updateLog.size(); i++) {
 			UpdateLogEntry entry = updateLog.get(i);
 			if (entry.isGossiped()){
-				if (entry.getEntry().getTimestamp().happenedBefore(boardTimestamp) == 0) {
-					if (executedLog.contains(entry.getEntry().getTimestamp()))
-						//delete.add(entry);
-						updateLog.add(entry);
+				if (entry.getTimestamp().happenedBefore(boardTimestamp)) {
+					if (executedLog.contains(entry.getTimestamp()))
+						delete.add(entry);
 				}
 			}
-		}*/
+		}
 
-		updateLog.clear();
-		//updateLog.removeAll(delete);
-		//Logger.getInstance().logRank(""+updateLog.size(), 2);
+		updateLog.removeAll(delete);
 	}
 
 	public void addQuery(QueryMessage message) {
@@ -142,22 +133,11 @@ public class ReplicaManager extends Manager {
 		for (int i = 0; i < pending.size(); i++) {
 			handler.handleMessage(pending.get(i), this);
 		}
-
-		// gossips
-		// lazy implementieren
-
 		
-		if (random.nextInt(100)>=95){
+		if (random.nextInt(100)>=90){
 			Logger.getInstance().log("Send Gossips");
-			
-			for (int i = Settings.getInstance().getNumberOfFrontends(); i<Settings.getInstance().getSize(); i++) {
-				if (i == nodeId) continue;
-				sendGossip(i);
-			}
+			gossipAll();
 		}
-		
-
-		// Output
 
 	}
 	
@@ -173,5 +153,11 @@ public class ReplicaManager extends Manager {
 			updateLog.get(i).setGossiped(true);
 		}
 	}
-
+	
+	public void gossipAll() {
+		for (int i = Settings.getInstance().getNumberOfFrontends(); i<Settings.getInstance().getSize(); i++) {
+			if (i == nodeId) continue;
+			sendGossip(i);
+		}
+	}
 }

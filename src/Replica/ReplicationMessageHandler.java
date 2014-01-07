@@ -8,15 +8,15 @@ public class ReplicationMessageHandler extends MessageHandler {
 	
 	private void handleQuery(QueryMessage message, ReplicaManager replicaManager) {
 		
-		Logger.getInstance().log("Handle Query message from " + message.getSender());
-		
-		if (replicaManager.getBoardTimestamp().happenedBefore(message.getTimestamp())==0) {
+		if (replicaManager.getBoardTimestamp().happenedBefore(message.getTimestamp())) {
+			Logger.getInstance().log("Handle Query message from " + message.getSender());
 			// wohoo, i can answer it already!
 			QueryMessage msg = new QueryMessage();
 			msg.setReceiver(message.getSender());
 			msg.setSender(message.getReceiver());
 			msg.setBoard(replicaManager.getBoard());
 			msg.setTimestamp(replicaManager.getBoardTimestamp());
+			sendMessage(msg);
 		} else {
 			// can not answer at the moment, i have to wait
 			replicaManager.addQuery(message);
@@ -59,19 +59,13 @@ public class ReplicationMessageHandler extends MessageHandler {
 		
 		// inform front end
 		UpdateMessage msg = new UpdateMessage();
-		msg.setEntry(message.getEntry());
-		msg.setTimestamp(timestamp);
 		msg.setSender(message.getReceiver());
 		msg.setReceiver(message.getSender());
 		
 		sendMessage(msg);
 		
-		Logger.getInstance().log("Update: --> u.prev: " + message.getTimestamp().toString() + " valueTS: " + replicaManager.getBoardTimestamp().toString() + " : " + message.getTimestamp().happenedBefore(replicaManager.getBoardTimestamp()));
-		// update
-		// TODO : Ist das richtig im Skript??
-		if (message.getTimestamp().equals(replicaManager.getBoardTimestamp()) || message.getTimestamp().happenedBefore(replicaManager.getBoardTimestamp())==1) {
-			replicaManager.addBoardEntry(message.getEntry(), timestamp, message.getTimestamp());
-		}
+		// Update
+		replicaManager.executeUpdateLog();
 		
 		// print what we have in our board
 		replicaManager.printBoard();

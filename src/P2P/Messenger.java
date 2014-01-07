@@ -10,8 +10,7 @@ public class Messenger {
 
 		Message[] buffer = new Message[1];
 		buffer[0] = message;
-		Request request = MPI.COMM_WORLD.Isend(buffer, 0, 1, MPI.OBJECT,
-				message.getReceiver(), 0);
+		Request request = MPI.COMM_WORLD.Isend(buffer, 0, 1, MPI.OBJECT, message.getReceiver(), 0);
 		
 		return request;
 
@@ -19,15 +18,13 @@ public class Messenger {
 	
 	public static Request listenAny(Message[] buffer) {
 		
-		Request request = MPI.COMM_WORLD.Irecv(buffer, 0, 1,
-				MPI.OBJECT, MPI.ANY_SOURCE, 0);
+		Request request = MPI.COMM_WORLD.Irecv(buffer, 0, 1, MPI.OBJECT, MPI.ANY_SOURCE, 0);
 		return request;
 	}
 	
 	public static Request listen(Message[] buffer, int sender) {
 		
-		Request request = MPI.COMM_WORLD.Irecv(buffer, 0, 1,
-				MPI.OBJECT, sender, 0);
+		Request request = MPI.COMM_WORLD.Irecv(buffer, 0, 1, MPI.OBJECT, sender, 0);
 		return request;
 	}
 

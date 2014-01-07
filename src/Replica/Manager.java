@@ -1,5 +1,8 @@
 package Replica;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import Board.BoardEntry;
@@ -14,13 +17,17 @@ public abstract class Manager {
 	protected static final int WAIT_TIME = 1000;
 
 	protected int nodeId;
-	protected ReplicationTimestamp timestamp;
+	//protected ReplicationTimestamp timestamp;
 	protected Request[] requests;
 	protected Message[][] messages;
 	protected ArrayList<BoardEntry> board;
 	protected ReplicationTimestamp boardTimestamp;
 	
 	
+	public void setBoardTimestamp(ReplicationTimestamp boardTimestamp) {
+		this.boardTimestamp = boardTimestamp;
+	}
+
 	public ArrayList<BoardEntry> getBoard() {
 		return board;
 	}
@@ -59,13 +66,7 @@ public abstract class Manager {
 		this.nodeId = nodeId;
 	}
 
-	public ReplicationTimestamp getTimestamp() {
-		return timestamp;
-	}
 
-	public void setTimestamp(ReplicationTimestamp timestamp) {
-		this.timestamp = timestamp;
-	}
 	
 	public void run() {
 		while (true) {
@@ -79,11 +80,65 @@ public abstract class Manager {
 	}
 	
 	public void printBoard() {
-		StringBuilder sb=new StringBuilder("Board: ");
+		StringBuilder sb=new StringBuilder("######BOARD"+nodeId+"######\n");
 		for (int i = 0 ; i<board.size(); i++) {
-			sb.append(board.get(i).getTitle()+" by "+board.get(i).getUserId()+", ");
+			sb.append(printChildren(board.get(i),0));
 		}
-		Logger.getInstance().log(sb.toString());
+		PrintWriter writer;
+		try {
+			writer = new PrintWriter(Settings.getInstance().getPath()+"board-"+nodeId+".txt", "UTF-8");
+			writer.append(sb.toString());
+			writer.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+	private String printChildren(BoardEntry boardEntry, int level) {
+		String result = "";
+		for (int i = 0; i < level; i++) {
+			result+="--";
+		}
+		result += (boardEntry.getTitle()+"("+boardEntry.getUserId()+")" +"\n");
+		
+		if (boardEntry.getChild()!=null)
+			result += printChildren(boardEntry.getChild(), ++level);
+		
+		return result;
+	}
+	
+	protected boolean addBoardEntry(BoardEntry entry) {
+		if (entry.getParent() == null) {
+			board.add(entry);
+		} else {
+			BoardEntry existing=null;
+			for (int i = 0; i<board.size();i++) {
+				existing=findEntry(board.get(i),entry.getParent().getTitle());
+				if (existing!=null) break;
+			}
+			if (existing==null) return false;
+			
+			existing.setChild(entry);
+		}
+		
+		return true;
+	}
+	
+
+	private BoardEntry findEntry(BoardEntry parent, String title) {
+		BoardEntry entry = null;
+		if (parent.getTitle().equals(title))
+			entry = parent;
+		else if (parent.getChild()!=null)
+			entry = findEntry(parent.getChild(), title);
+		
+		return entry;
+		
 	}
 
 	protected abstract void executeInterval();

@@ -36,7 +36,7 @@ public class UpdateLogEntry implements Serializable {
 		this.isGossiped = isGossiped;
 	}
 
-	public int happenedBefore(UpdateLogEntry o) {
+	public boolean happenedBefore(UpdateLogEntry o) {
 		return timestamp.happenedBefore(o.timestamp);
 	}
 

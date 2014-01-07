@@ -43,12 +43,12 @@ public class ReplicationTimestamp implements Serializable, Cloneable {
 			
 		return val;
 	}
+	
+	public boolean equals(Object obj) {
+		return equals((ReplicationTimestamp)obj);
+	}
 
-	/**
-	 * 
-	 * @param other
-	 * @return 1 if this happened before other, 0 if this did not happen before other, -1 if no causal connection
-	 */
+
 	public boolean equals(ReplicationTimestamp other) {
 		int[] values = other.timestamps;
 		
@@ -63,42 +63,16 @@ public class ReplicationTimestamp implements Serializable, Cloneable {
 		
 	}
 	
-	/**
-	 * 
-	 * @param other
-	 * @return 1 if this happened before other, 0 if this did not happen before other, -1 if no causal connection
-	 */
-	public int happenedBefore(ReplicationTimestamp other) {
+	
+	public boolean happenedBefore(ReplicationTimestamp other) {
 		int[] values = other.timestamps;
 		
-		int otherCount = 0;
-		int thisCount = 0;
-		int sameCount = 0;
-		
-		// this < other then bigger = true
-		
 		for (int i = 0; i < values.length; i++) {
-			if (values[i] <= timestamps[i]) {
-				thisCount++;
+			if (values[i] > timestamps[i]) {
+				return false;
 			}
-			
-			if (values[i] >= timestamps[i]){
-				otherCount++;
-			} 
-			
-			if (values[i] == timestamps[i]) {
-				sameCount++;
-			}
-				
 		}
-		
-		if (otherCount-sameCount == 0)
-			return 0;
-		if (thisCount-sameCount == 0)
-			return 1;
-		
-		// no causal connection
-		return -1;
+		return true;
 	}
 	
 	public String toString() {

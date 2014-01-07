@@ -33,6 +33,9 @@ public class Replica {
 			instance = new ReplicaManager(rank);
 		}
 		
+		// init files
+		instance.printBoard();
+		
 		instance.run();
 		
 		MPI.Finalize();

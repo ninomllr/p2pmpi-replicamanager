@@ -11,20 +11,20 @@ public class GossipMessage extends Message {
 	
 	private static final long serialVersionUID = 1L;
 	private ReplicationTimestamp timestamp;
-	private ArrayList<UpdateLogEntry> log;
+	private UpdateLog log;
 
-	public ArrayList<UpdateLogEntry> getLog() {
+	public UpdateLog getLog() {
 		return log;
 	}
 
-	public void setLog(List<UpdateLogEntry> updateLog) {
-		this.log = (ArrayList<UpdateLogEntry>) updateLog;
+	public void setLog(UpdateLog updateLog) {
+		this.log = (UpdateLog) updateLog;
 	}
 
 	public GossipMessage() {
 		super(MessageType.GOSSIP);
 		setTimestamp(new ReplicationTimestamp());
-		setLog(new ArrayList<UpdateLogEntry>());
+		setLog(new UpdateLog());
 	}
 
 	public ReplicationTimestamp getTimestamp() {

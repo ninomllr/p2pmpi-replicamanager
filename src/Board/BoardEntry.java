@@ -11,11 +11,15 @@ public class BoardEntry implements Serializable {
 	private int userId;
 	private String title;
 	private String content;
+	private BoardEntry parent;
+	private BoardEntry child;
 	
 	public BoardEntry(int userId, String title, String content) {
 		setContent(content);
 		setTitle(title);
 		setUserId(userId);
+		setChild(null);
+		setParent(null);
 	}
 	
 	public int getUserId() {
@@ -35,6 +39,22 @@ public class BoardEntry implements Serializable {
 	}
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public BoardEntry getParent() {
+		return parent;
+	}
+
+	public void setParent(BoardEntry parent) {
+		this.parent = parent;
+	}
+	
+	public BoardEntry getChild() {
+		return child;
+	}
+
+	public void setChild(BoardEntry child) {
+		this.child = child;
 	}
 
 }

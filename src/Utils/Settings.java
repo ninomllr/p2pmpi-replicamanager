@@ -4,8 +4,9 @@ public  class Settings {
 	
 	private int rank;
 	private int size;
-	private final int numberOfFrontends=2;
+	private final int numberOfFrontends=9;
 	private final int seed = 123456;
+	private final String path = "/home/nino/replica/";
 
 	private static Settings instance;
 
@@ -44,6 +45,10 @@ public  class Settings {
 
 	public int getSeed() {
 		return seed;
+	}
+
+	public String getPath() {
+		return path;
 	}	
 	
 
