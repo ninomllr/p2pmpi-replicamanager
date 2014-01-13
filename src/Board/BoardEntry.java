@@ -1,6 +1,7 @@
 package Board;
 
 import java.io.Serializable;
+import java.util.*;
 
 public class BoardEntry implements Serializable {
 	
@@ -12,13 +13,13 @@ public class BoardEntry implements Serializable {
 	private String title;
 	private String content;
 	private BoardEntry parent;
-	private BoardEntry child;
+	private List<BoardEntry> child;
 	
 	public BoardEntry(int userId, String title, String content) {
 		setContent(content);
 		setTitle(title);
 		setUserId(userId);
-		setChild(null);
+		setChild(new ArrayList<BoardEntry>());
 		setParent(null);
 	}
 	
@@ -49,11 +50,20 @@ public class BoardEntry implements Serializable {
 		this.parent = parent;
 	}
 	
-	public BoardEntry getChild() {
+	public List<BoardEntry> getChildren() {
 		return child;
 	}
+	
+	public BoardEntry getChild(int pos) {
+		return child.get(pos);
+	}
 
-	public void setChild(BoardEntry child) {
+	public void addChild(BoardEntry child) {
+		child.setParent(this);
+		this.child.add(child);
+	}
+	
+	public void setChild(List<BoardEntry> child) {
 		this.child = child;
 	}
 

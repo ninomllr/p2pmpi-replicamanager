@@ -56,7 +56,7 @@ public class ReplicaManager extends Manager {
 			if (!super.addBoardEntry(entry.getEntry().getBoardEntry()))
 				return;
 			
-			boardTimestamp = entry.getTimestamp().maximize(boardTimestamp);
+			boardTimestamp = entry.getTimestamp().maximize(boardTimestamp).clone();
 			executedLog.add(entry.getTimestamp());
 		}
 	}
@@ -91,13 +91,11 @@ public class ReplicaManager extends Manager {
 		for (int i = 0; i < updateLog.size(); i++) {
 			UpdateLogEntry entry = updateLog.get(i);
 			if (entry.isGossiped()){
-				if (entry.getTimestamp().happenedBefore(boardTimestamp)) {
-					if (executedLog.contains(entry.getTimestamp()))
-						delete.add(entry);
-				}
+				if (executedLog.contains(entry.getTimestamp()))
+					delete.add(entry);
 			}
+			//Logger.getInstance().log("Id: " + entry.getEntry().getBoardEntry().getTitle()+ " TS: " + entry.getTimestamp() + "---  gossiped: "+entry.isGossiped() + "-- executed: "+ executedLog.contains(entry.getTimestamp()));
 		}
-
 		updateLog.removeAll(delete);
 	}
 
@@ -142,16 +140,19 @@ public class ReplicaManager extends Manager {
 	}
 	
 	public void sendGossip(int receiver) {
+		
+		for (int i = 0; i < updateLog.size(); i++) {
+			updateLog.get(i).setGossiped(true);
+		}
+		
+		//Logger.getInstance().log(updateLog.toString());
+		
 		GossipMessage message = new GossipMessage();
 		message.setLog(updateLog);
 		message.setTimestamp(timestamp);
 		message.setReceiver(receiver);
 		message.setSender(nodeId);
 		Messenger.send(message);
-		
-		for (int i = 0; i < updateLog.size(); i++) {
-			updateLog.get(i).setGossiped(true);
-		}
 	}
 	
 	public void gossipAll() {

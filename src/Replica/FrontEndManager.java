@@ -1,11 +1,11 @@
 package Replica;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import Board.BoardEntry;
 import Messages.*;
-import Messages.Message;
 import P2P.Messenger;
 import Utils.*;
 
@@ -62,8 +62,9 @@ public class FrontEndManager extends Manager {
 				
 				BoardEntry entry;
 				if (board.size()!=0 && random.nextInt(100)<70) { // create an answer
-					BoardEntry existing = getExistingBoardEntry();
-					entry = new BoardEntry(nodeId, "RE:"+existing.getTitle(), ""+nodeId);
+					
+					BoardEntry existing = getExistingBoardEntry(board);
+					entry = new BoardEntry(nodeId, "RE:"+existing.getTitle()+"-"+random.nextInt(999999), ""+nodeId);
 					entry.setParent(existing);
 				} else { // create a new thread
 					entry = new BoardEntry(nodeId, String.format("%06d", random.nextInt(999999)), ""+nodeId);
@@ -78,16 +79,19 @@ public class FrontEndManager extends Manager {
 		}
 	}
 
-	private BoardEntry getExistingBoardEntry() {
-		int thread = random.nextInt(board.size());
-		BoardEntry entry = board.get(thread);
-		while (entry.getChild()!=null) {
-			entry = entry.getChild();
+	private BoardEntry getExistingBoardEntry(List<BoardEntry> thread) {
+		int threadId = random.nextInt(thread.size());
+		BoardEntry entry = thread.get(threadId);
+		Logger.getInstance().log(entry.getTitle() + " size: "+entry.getChildren().size());
+		if (entry.getChildren().size()>0) {
+			int next = random.nextInt(100);
+			if (next>50)
+				entry = getExistingBoardEntry(entry.getChildren());
 		}
 		return entry;
 	}
 	
-	public void createQueryMessage(int receiver) {
+	public void createQueryMessage(int receiver) {	
 		QueryMessage message = new QueryMessage();
 		message.setTimestamp(boardTimestamp);
 		message.setReceiver(receiver);
@@ -104,9 +108,9 @@ public class FrontEndManager extends Manager {
 		Messenger.send(message);
 	}
 	
-	public boolean addBoardEntry(BoardEntry entry) {
+	/*public boolean addBoardEntry(BoardEntry entry) {
 		return super.addBoardEntry(entry);
-	}
+	}*/
 	
 	public int getReplicaManager() {
 		return random.nextInt(Settings.getInstance().getNumberOfReplicaManagers())+Settings.getInstance().getNumberOfFrontends();

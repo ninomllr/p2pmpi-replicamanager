@@ -15,11 +15,11 @@ public class UpdateLogEntry implements Serializable {
 	private boolean isGossiped;
 	
 	public ReplicationTimestamp getTimestamp() {
-		return timestamp;
+		return timestamp.clone();
 	}
 
 	public void setTimestamp(ReplicationTimestamp timestamp) {
-		this.timestamp = timestamp;
+		this.timestamp = timestamp.clone();
 	}
 
 	public UpdateLogEntry(ReplicationTimestamp identifier, ReplicaEntry data) {
@@ -47,5 +47,19 @@ public class UpdateLogEntry implements Serializable {
 	private void setEntry(ReplicaEntry entry) {
 		this.entry = entry;
 	}
+	
+	public boolean equals(Object obj) {
+		return equals((UpdateLogEntry)obj);
+	}
+
+
+	public boolean equals(UpdateLogEntry other) {
+		return this.getTimestamp().equals(other.getTimestamp());
+	}
+	
+	public String toString() {
+		return timestamp.toString();
+	}
+		
 
 }

@@ -8,6 +8,7 @@ public class UpdateLog extends LinkedList<UpdateLogEntry>{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
 
 	@Override
 	public boolean add(UpdateLogEntry arg0) {
@@ -22,8 +23,10 @@ public class UpdateLog extends LinkedList<UpdateLogEntry>{
 	@Override
 	public boolean addAll(Collection<? extends UpdateLogEntry> arg0) {
 		Iterator<? extends UpdateLogEntry> iterator = arg0.iterator();
-
+		
 		while (iterator.hasNext()){
+			
+			boolean add=true;
 		
 			Iterator<? extends UpdateLogEntry> iterator2 = this.iterator();
 			
@@ -31,13 +34,22 @@ public class UpdateLog extends LinkedList<UpdateLogEntry>{
 			int i = 0;
 			while (iterator2.hasNext()) {
 				UpdateLogEntry entry2 = iterator2.next();
-				if (entry.happenedBefore(entry2)) {
+				
+				if (entry.equals(entry2)){
+					add = false;
 					break;
 				}
+				
+				if (entry.happenedBefore(entry2)) {
+					break;
+				} 
+				
 				i++;
 			}
 
-			this.add(i, entry);
+			if(add) {
+				this.add(i, entry);
+			}
 		}
 		return true;
 	}

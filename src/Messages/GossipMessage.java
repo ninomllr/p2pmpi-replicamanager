@@ -28,11 +28,11 @@ public class GossipMessage extends Message {
 	}
 
 	public ReplicationTimestamp getTimestamp() {
-		return timestamp;
+		return timestamp.clone();
 	}
 
 	public void setTimestamp(ReplicationTimestamp timestamp) {
-		this.timestamp = timestamp;
+		this.timestamp = timestamp.clone();
 	}
 
 }

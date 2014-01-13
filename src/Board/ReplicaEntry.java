@@ -14,11 +14,11 @@ public class ReplicaEntry implements Serializable {
 	private BoardEntry boardEntry;
 	
 	public ReplicationTimestamp getTimestamp() {
-		return timestamp;
+		return timestamp.clone();
 	}
 
 	public void setTimestamp(ReplicationTimestamp timestamp) {
-		this.timestamp = timestamp;
+		this.timestamp = timestamp.clone();
 	}
 
 	public BoardEntry getBoardEntry() {

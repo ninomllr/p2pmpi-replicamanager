@@ -4,9 +4,13 @@ public  class Settings {
 	
 	private int rank;
 	private int size;
-	private final int numberOfFrontends=9;
-	private final int seed = 123456;
-	private final String path = "/home/nino/replica/";
+	private final int numberOfFrontends = 2;
+	private final int seed = 654321;
+	private String path;
+
+	public void setPath(String path) {
+		this.path = path;
+	}
 
 	private static Settings instance;
 
